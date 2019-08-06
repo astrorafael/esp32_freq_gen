@@ -19,9 +19,9 @@
 // Expressif SDK-IDF standard includes
 // -----------------------------------
 
-#include "esp_log.h"
-#include "esp_console.h"
-#include "argtable3/argtable3.h"
+#include <esp_log.h>
+#include <esp_console.h>
+#include <argtable3/argtable3.h>
 
 // --------------
 // Local includes
@@ -746,8 +746,15 @@ static void autoload_at_boot()
 {
     uint32_t autoload;
     nvs_handle_t    handle;
+    esp_err_t res;
     
-    ESP_ERROR_CHECK( freq_nvs_autoboot_load(&autoload) );
+    res = freq_nvs_autoboot_load(&autoload);
+    if (res != ESP_OK) {
+        ESP_LOGW(CMD_TAG, "Could not perform autoboot.Trying to fix it");
+        freq_nvs_autoboot_save(false);
+        return;
+    }
+
     if (autoload) {
         // Autoload from NVS
         ESP_ERROR_CHECK( freq_nvs_begin_transaction(NVS_READONLY, &handle) );
